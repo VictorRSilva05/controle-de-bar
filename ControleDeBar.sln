@@ -1,0 +1,34 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.14.36127.28
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "1. Apresentação", "1. Apresentação", "{02EA681E-C7D8-13C7-8484-4AC65E1B71E8}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "2. Domínio", "2. Domínio", "{99F70B60-2A52-4FFC-B2AC-67EE81A06B9A}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "3. Infraestrutura", "3. Infraestrutura", "{D7E0FE6D-0AA0-471F-BF9F-3C57CDA0BC8E}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ControleDeBar.WebApp", "ControleDeBar.WebApp\ControleDeBar.WebApp.csproj", "{5835CB7F-4850-4C18-8396-51D370F67DFC}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{5835CB7F-4850-4C18-8396-51D370F67DFC}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{5835CB7F-4850-4C18-8396-51D370F67DFC}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{5835CB7F-4850-4C18-8396-51D370F67DFC}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{5835CB7F-4850-4C18-8396-51D370F67DFC}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{5835CB7F-4850-4C18-8396-51D370F67DFC} = {02EA681E-C7D8-13C7-8484-4AC65E1B71E8}
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {A23C7822-6C08-4037-883A-0D86AD867062}
+	EndGlobalSection
+EndGlobal
