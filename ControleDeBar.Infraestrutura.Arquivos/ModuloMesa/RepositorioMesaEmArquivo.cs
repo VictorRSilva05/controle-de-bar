@@ -13,13 +13,4 @@ public class RepositorioMesaEmArquivo : RepositorioBaseEmArquivo<Mesa>, IReposit
         return contexto.Mesas;
     }
 
-    void IRepositorio<Mesa>.EditarRegistro(Guid idRegistro, Mesa registroEditado)
-    {
-        throw new NotImplementedException();
-    }
-
-    void IRepositorio<Mesa>.ExcluirRegistro(Guid idRegistro)
-    {
-        throw new NotImplementedException();
-    }
 }
