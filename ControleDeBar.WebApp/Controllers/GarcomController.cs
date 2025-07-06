@@ -10,13 +10,11 @@ namespace ControleDeBar.WebApp.Controllers;
 [Route("garcons")]
 public class GarcomController : Controller
 {
-    private readonly ContextoDados contextoDados;
     private readonly IRepositorioGarcom repositorioGarcom;
 
-    public GarcomController()
+    public GarcomController(IRepositorioGarcom repositorioGarcom)
     {
-        contextoDados = new ContextoDados(true);
-        repositorioGarcom = new RepositorioGarcomEmArquivo(contextoDados);
+        this.repositorioGarcom = repositorioGarcom;
     }
 
     public IActionResult Index()

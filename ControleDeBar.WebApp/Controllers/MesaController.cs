@@ -10,13 +10,11 @@ namespace ControleDeBar.WebApp.Controllers;
 [Route("mesas")]
 public class MesaController : Controller
 {
-    private readonly ContextoDados contextoDados;
     private readonly IRepositorioMesa repositorioMesa;
 
-    public MesaController()
+    public MesaController(IRepositorioMesa repositorioMesa)
     {
-        contextoDados = new ContextoDados(true);
-        repositorioMesa = new RepositorioMesaEmArquivo(contextoDados);
+        this.repositorioMesa = repositorioMesa;
     }
 
     [HttpGet]

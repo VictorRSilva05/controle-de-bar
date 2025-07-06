@@ -10,13 +10,11 @@ namespace ControleDeBar.WebApp.Controllers;
 [Route("produtos")]
 public class ProdutoController : Controller
 {
-    private readonly ContextoDados contextoDados;
     private readonly IRepositorioProduto repositorioProduto;
 
-    public ProdutoController()
+    public ProdutoController(IRepositorioProduto repositorioProduto)
     {
-        contextoDados = new ContextoDados(true);
-        repositorioProduto = new RepositorioProdutoEmArquivo(contextoDados);
+        this.repositorioProduto = repositorioProduto;
     }
 
     [HttpGet]

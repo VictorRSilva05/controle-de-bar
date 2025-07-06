@@ -16,19 +16,22 @@ namespace ControleDeBar.WebApp.Controllers;
 [Route("contas")]
 public class ContaController : Controller
 {
-    private readonly ContextoDados contextoDados;
     private readonly IRepositorioConta repositorioConta;
     private readonly IRepositorioMesa repositorioMesa;
     private readonly IRepositorioGarcom repositorioGarcom;
     private readonly IRepositorioProduto repositorioProduto;
 
-    public ContaController()
+    public ContaController(
+        IRepositorioConta repositorioConta,
+        IRepositorioMesa repositorioMesa,
+        IRepositorioGarcom repositorioGarcom,
+        IRepositorioProduto repositorioProduto
+        )
     {
-        contextoDados = new ContextoDados(true);
-        repositorioConta = new RepositorioContaEmArquivo(contextoDados);
-        repositorioMesa = new RepositorioMesaEmArquivo(contextoDados);
-        repositorioGarcom = new RepositorioGarcomEmArquivo(contextoDados);
-        repositorioProduto = new RepositorioProdutoEmArquivo(contextoDados);
+        this.repositorioConta = repositorioConta;
+        this.repositorioMesa = repositorioMesa;
+        this.repositorioGarcom = repositorioGarcom;
+        this.repositorioProduto = repositorioProduto;
     }
 
     [HttpGet]
@@ -102,10 +105,11 @@ public class ContaController : Controller
 
         return View(fecharContaVM);
     }
-
+     /*
     [HttpPost, Route("/contas/{id:guid}/fechar")]
     public IActionResult FecharConfirmado(Guid id)
     {
+        
         var registroSelecionado = repositorioConta.SelecionarPorId(id);
 
         registroSelecionado.Fechar();
@@ -113,6 +117,7 @@ public class ContaController : Controller
         contextoDados.Salvar();
 
         return RedirectToAction(nameof(Index));
+        
     }
 
     [HttpGet, Route("/contas/{id:guid}/gerenciar-pedidos")]
@@ -128,24 +133,27 @@ public class ContaController : Controller
 
     [HttpPost, Route("/contas/{id:guid}/adicionar-pedido")]
     public IActionResult AdicionarPedido(Guid id, AdicionarPedidoViewModel adicionarPedidoVm)
-    {
-        var contaSelecionada = repositorioConta.SelecionarPorId(id);
-        var produtoSelecionado = repositorioProduto.SelecionarRegistroPorId(adicionarPedidoVm.IdProduto);
+     {
 
-        contaSelecionada.RegistrarPedido(
-            produtoSelecionado,
-            adicionarPedidoVm.QuantidadeSolicitada
-        );
+         var contaSelecionada = repositorioConta.SelecionarPorId(id);
+         var produtoSelecionado = repositorioProduto.SelecionarRegistroPorId(adicionarPedidoVm.IdProduto);
 
-        contextoDados.Salvar();
+         contaSelecionada.RegistrarPedido(
+             produtoSelecionado,
+             adicionarPedidoVm.QuantidadeSolicitada
+         );
 
-        var produtos = repositorioProduto.SelecionarRegistros();
+         contextoDados.Salvar();
 
-        var gerenciarPedidosVm = new GerenciarPedidosViewModel(contaSelecionada, produtos);
+         var produtos = repositorioProduto.SelecionarRegistros();
 
-        return View("GerenciarPedidos", gerenciarPedidosVm);
-    }
+         var gerenciarPedidosVm = new GerenciarPedidosViewModel(contaSelecionada, produtos);
 
+         return View("GerenciarPedidos", gerenciarPedidosVm);
+
+     }
+      */
+    /*
     [HttpPost, Route("/contas/{id:guid}/remover-pedido/{idPedido:guid}")]
     public IActionResult RemoverPedido(Guid id, Guid idPedido)
     {
@@ -161,7 +169,7 @@ public class ContaController : Controller
 
         return View("GerenciarPedidos", gerenciarPedidosVm);
     }
-
+      */
     [HttpGet("faturamento")]
     public IActionResult Faturamento(DateTime? data)
     {
