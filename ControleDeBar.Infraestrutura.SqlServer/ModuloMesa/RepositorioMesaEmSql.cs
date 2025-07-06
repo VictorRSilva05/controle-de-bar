@@ -1,47 +1,50 @@
-﻿using ControleDeBar.Dominio.ModuloGarcom;
+﻿using ControleDeBar.Dominio.ModuloConta;
 using ControleDeBar.Dominio.ModuloMesa;
 using Microsoft.Data.SqlClient;
 
-namespace ControleDeBar.Infraestrutura.SqlServer.ModuloMesa
+namespace ControleDeBar.Infraestrutura.SQLServer.ModuloMesa;
+
+public class RepositorioMesaSQL : IRepositorioMesa
 {
-    public class RepositorioMesaEmSql : IRepositorioMesa
+    private readonly string connectionString =
+        "Data Source=(LocalDB)\\MSSQLLocalDB;Initial Catalog=ControleDeBarDb;Integrated Security=True";
+
+    public void CadastrarRegistro(Mesa novoRegistro)
     {
-        private readonly string _sql =
-            "Data Source=(LocalDB)\\MSSQLLocalDB;Initial Catalog=ControleDeBarDb;Integrated Security=True";
-        public void CadastrarRegistro(Mesa novoRegistro)
-        {
-            var sqlInserir =
+        novoRegistro.Id = Guid.NewGuid();
+
+        const string sqlCadastrar =
             @"INSERT INTO [TBMESA]
-                (
-                    [ID],
-                    [NUMERO],
-                    [CAPACIDADE],
-                    [ESTAOCUPADA]
-                )
-             VALUES
-                (
-                    @ID,
-                    @NUMERO,
-                    @CAPACIDADE,
-                    @ESTAOCUPADA
-                );";
+            (
+                [ID],
+                [NUMERO],
+                [CAPACIDADE],
+                [ESTAOCUPADA]
+            )
+            VALUES
+            (
+                @ID,
+                @NUMERO,
+                @CAPACIDADE,
+                @ESTAOCUPADA
+            )";
 
-            SqlConnection con = new SqlConnection(_sql);
+        SqlConnection conexaoComBanco = new(connectionString);
 
-            SqlCommand sqlCommand = new SqlCommand(sqlInserir, con);
+        conexaoComBanco.Open();
 
-            ConfigurarParametrosMesa(novoRegistro, sqlCommand);
+        SqlCommand comandoCadastro = new(sqlCadastrar, conexaoComBanco);
 
-            con.Open();
+        ConfigurarParametrosMesa(novoRegistro, comandoCadastro);
 
-            sqlCommand.ExecuteNonQuery();
+        comandoCadastro.ExecuteNonQuery();
 
-            con.Close();
-        }
+        conexaoComBanco.Close();
+    }
 
-        public bool EditarRegistro(Guid idRegistro, Mesa registroEditado)
-        {
-            var sqlEditar =
+    public bool EditarRegistro(Guid idRegistro, Mesa registroEditado)
+    {
+        const string sqlEditar =
             @"UPDATE [TBMESA]
             SET
                 [NUMERO] = @NUMERO,
@@ -49,48 +52,48 @@ namespace ControleDeBar.Infraestrutura.SqlServer.ModuloMesa
             WHERE
                 [ID] = @ID";
 
-            SqlConnection con = new SqlConnection(_sql);
+        SqlConnection conexaoComBanco = new(connectionString);
 
-            SqlCommand sqlCommand = new SqlCommand(sqlEditar, con);
+        conexaoComBanco.Open();
 
-            registroEditado.Id = idRegistro;
+        SqlCommand comandoEdicao = new(sqlEditar, conexaoComBanco);
 
-            ConfigurarParametrosMesa(registroEditado, sqlCommand);
+        registroEditado.Id = idRegistro;
 
-            con.Open();
+        ConfigurarParametrosMesa(registroEditado, comandoEdicao);
 
-            var linhasAfetadas = sqlCommand.ExecuteNonQuery();
+        int linhasAfetadas = comandoEdicao.ExecuteNonQuery();
 
-            con.Close();
+        conexaoComBanco.Close();
 
-            return linhasAfetadas > 0;
-        }
+        return linhasAfetadas >= 1;
+    }
 
-        public bool ExcluirRegistro(Guid idRegistro)
-        {
-            var sqlExcluir =
+    public bool ExcluirRegistro(Guid idRegistro)
+    {
+        const string sqlExcluir =
             @"DELETE FROM [TBMESA]
-                WHERE
-            [ID] = @ID";
+            WHERE
+                [ID] = @ID";
 
-            SqlConnection con = new SqlConnection(_sql);
+        SqlConnection conexaoComBanco = new(connectionString);
 
-            SqlCommand sqlCommand = new SqlCommand(sqlExcluir, con);
+        conexaoComBanco.Open();
 
-            sqlCommand.Parameters.AddWithValue("ID", idRegistro);
+        SqlCommand comandoExclusao = new(sqlExcluir, conexaoComBanco);
 
-            con.Open();
+        comandoExclusao.Parameters.AddWithValue("ID", idRegistro);
 
-            var linhasAfetadas = sqlCommand.ExecuteNonQuery();
+        int linhasAfetadas = comandoExclusao.ExecuteNonQuery();
 
-            con.Close();
+        conexaoComBanco.Close();
 
-            return linhasAfetadas > 0;
-        }
+        return linhasAfetadas >= 1;
+    }
 
-        public Mesa SelecionarRegistroPorId(Guid idRegistro)
-        {
-            var sqlSelecionarPorId =
+    public Mesa? SelecionarRegistroPorId(Guid idRegistro)
+    {
+        const string sqlSelecionarTodos =
             @"SELECT
                 [ID],
                 [NUMERO],
@@ -101,29 +104,29 @@ namespace ControleDeBar.Infraestrutura.SqlServer.ModuloMesa
             WHERE
                 [ID] = @ID";
 
-            SqlConnection con = new SqlConnection(_sql);
+        SqlConnection conexaoComBanco = new(connectionString);
 
-            SqlCommand sqlCommand = new SqlCommand(sqlSelecionarPorId, con);
+        conexaoComBanco.Open();
 
-            sqlCommand.Parameters.AddWithValue("ID", idRegistro);
+        SqlCommand comandoSelecao = new(sqlSelecionarTodos, conexaoComBanco);
 
-            con.Open();
+        comandoSelecao.Parameters.AddWithValue("ID", idRegistro);
 
-            SqlDataReader reader = sqlCommand.ExecuteReader();
+        SqlDataReader leitor = comandoSelecao.ExecuteReader();
 
-            Mesa? mesa = null;
+        Mesa? mesa = null;
 
-            if (reader.Read())
-                mesa = ConverterParaMesa(reader);
+        if (leitor.Read())
+            mesa = ConverterParaMesa(leitor);
 
-            con.Close();
+        conexaoComBanco.Close();
 
-            return mesa;
-        }
+        return mesa;
+    }
 
-        public List<Mesa> SelecionarRegistros()
-        {
-            var sqlSelecionarTodos =
+    public List<Mesa> SelecionarRegistros()
+    {
+        const string sqlSelecionarTodos =
             @"SELECT
                 [ID],
                 [NUMERO],
@@ -132,44 +135,101 @@ namespace ControleDeBar.Infraestrutura.SqlServer.ModuloMesa
             FROM
                 [TBMESA]";
 
-            SqlConnection con = new SqlConnection(_sql);
+        SqlConnection conexaoComBanco = new(connectionString);
 
-            con.Open();
+        conexaoComBanco.Open();
 
-            SqlCommand sqlCommand = new SqlCommand(sqlSelecionarTodos, con);
+        SqlCommand comandoSelecao = new(sqlSelecionarTodos, conexaoComBanco);
 
-            SqlDataReader dataReader = sqlCommand.ExecuteReader();
+        SqlDataReader leitor = comandoSelecao.ExecuteReader();
 
-            var mesas = new List<Mesa>();
+        List<Mesa> mesas = [];
 
-            while (dataReader.Read())
-            {
-                var mesa = ConverterParaMesa(dataReader);
-                mesas.Add(mesa);
-            }
-
-            con.Close();
-
-            return mesas;
-        }
-
-        private Mesa ConverterParaMesa(SqlDataReader reader)
+        while (leitor.Read())
         {
-            var mesa = new Mesa(
-                Convert.ToInt32(reader["NUMERO"]),
-                Convert.ToInt32(reader["CAPACIDADE"])
-                );
-
-            mesa.Id = Guid.Parse(reader["ID"].ToString());
-
-            return mesa;
+            mesas.Add(ConverterParaMesa(leitor));
         }
-        private void ConfigurarParametrosMesa(Mesa mesa, SqlCommand sqlCommand)
-        {
-            sqlCommand.Parameters.AddWithValue("ID", mesa.Id);
-            sqlCommand.Parameters.AddWithValue("NUMERO", mesa.Numero);
-            sqlCommand.Parameters.AddWithValue("CAPACIDADE", mesa.Capacidade);
-            sqlCommand.Parameters.AddWithValue("ESTAOCUPADA", mesa.EstaOcupada);
-        }
+
+        conexaoComBanco.Close();
+
+        return mesas;
+    }
+
+    public bool VerificarMesaCheia(Mesa mesa, List<Conta> contasAbertas)
+    {
+        return mesa.EstaOcupada && contasAbertas.Count(c => c.Mesa.Id == mesa.Id) == mesa.Capacidade;
+    }
+
+    public void OcuparMesa(Mesa mesa)
+    {
+        mesa.Ocupar();
+
+        const string sqlFecharConta =
+            @"UPDATE [TBMESA]
+            SET
+                [ESTAOCUPADA] = @ESTAOCUPADA
+            WHERE
+                [ID] = @ID";
+
+        SqlConnection conexaoComBanco = new(connectionString);
+
+        conexaoComBanco.Open();
+
+        SqlCommand comandoFechamento = new(sqlFecharConta, conexaoComBanco);
+
+        comandoFechamento.Parameters.AddWithValue("ID", mesa.Id);
+        comandoFechamento.Parameters.AddWithValue("ESTAOCUPADA", mesa.EstaOcupada);
+
+        comandoFechamento.ExecuteNonQuery();
+
+        conexaoComBanco.Close();
+    }
+
+    public void DesocuparMesa(Mesa mesa)
+    {
+        mesa.Desocupar();
+
+        const string sqlFecharConta =
+            @"UPDATE [TBMESA]
+            SET
+                [ESTAOCUPADA] = @ESTAOCUPADA
+            WHERE
+                [ID] = @ID";
+
+        SqlConnection conexaoComBanco = new(connectionString);
+
+        conexaoComBanco.Open();
+
+        SqlCommand comandoFechamento = new(sqlFecharConta, conexaoComBanco);
+
+        comandoFechamento.Parameters.AddWithValue("ID", mesa.Id);
+        comandoFechamento.Parameters.AddWithValue("ESTAOCUPADA", mesa.EstaOcupada);
+
+        comandoFechamento.ExecuteNonQuery();
+
+        conexaoComBanco.Close();
+    }
+
+    public bool MesaContemVinculos(Guid mesaId, List<Conta> contas)
+    {
+        return contas.Any(c => c.Mesa.Id == mesaId);
+    }
+
+    private Mesa ConverterParaMesa(SqlDataReader leitor)
+    {
+        return new(
+            Guid.Parse(leitor["ID"].ToString()!),
+            Convert.ToInt32(leitor["NUMERO"]),
+            Convert.ToInt32(leitor["CAPACIDADE"]),
+            Convert.ToBoolean(leitor["ESTAOCUPADA"])
+            );
+    }
+
+    private void ConfigurarParametrosMesa(Mesa mesa, SqlCommand comando)
+    {
+        comando.Parameters.AddWithValue("ID", mesa.Id);
+        comando.Parameters.AddWithValue("NUMERO", mesa.Numero);
+        comando.Parameters.AddWithValue("CAPACIDADE", mesa.Capacidade);
+        comando.Parameters.AddWithValue("ESTAOCUPADA", mesa.EstaOcupada);
     }
 }

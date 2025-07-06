@@ -16,6 +16,13 @@ namespace ControleDeBar.Dominio.ModuloGarcom
             Nome = nome;
             Cpf = cpf;
         }
+
+        public Garcom(Guid id, string nome, string cpf)
+        {
+            Id = id;
+            Nome = nome;
+            Cpf = cpf;
+        }
         public override void AtualizarRegistro(Garcom registroEditado)
         {
             Nome = registroEditado.Nome;

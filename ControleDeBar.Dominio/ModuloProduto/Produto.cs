@@ -16,6 +16,13 @@ public class Produto : EntidadeBase<Produto>
         Valor = valor;
     }
 
+    public Produto(Guid guid, string nome, decimal valor)
+    {
+        Id = guid;
+        Nome = nome;
+        Valor = valor;
+    }
+
     public override void AtualizarRegistro(Produto registroEditado)
     {
         Nome = registroEditado.Nome;

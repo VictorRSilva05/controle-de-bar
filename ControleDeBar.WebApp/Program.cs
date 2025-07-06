@@ -1,10 +1,10 @@
 using ControleDeBar.Dominio.ModuloConta;
 using ControleDeBar.Dominio.ModuloMesa;
 using ControleDeBar.Dominio.ModuloProduto;
-using ControleDeBar.Infraestrutura.SqlServer.ModuloConta;
 using ControleDeBar.Infraestrutura.SqlServer.ModuloGarcom;
-using ControleDeBar.Infraestrutura.SqlServer.ModuloMesa;
 using ControleDeBar.Infraestrutura.SqlServer.ModuloProduto;
+using ControleDeBar.Infraestrutura.SQLServer.ModuloConta;
+using ControleDeBar.Infraestrutura.SQLServer.ModuloMesa;
 
 namespace ControleDeBar.WebApp
 {
@@ -16,9 +16,9 @@ namespace ControleDeBar.WebApp
 
             builder.Services.AddControllersWithViews();
             builder.Services.AddScoped<IRepositorioGarcom, RepositorioGarcomEmSql>();
-            builder.Services.AddScoped<IRepositorioMesa, RepositorioMesaEmSql>();
+            builder.Services.AddScoped<IRepositorioMesa, RepositorioMesaSQL>();
             builder.Services.AddScoped<IRepositorioProduto, RepositorioProdutoEmSql>();
-            builder.Services.AddScoped<IRepositorioConta, RepositorioContaEmSql>();
+            builder.Services.AddScoped<IRepositorioConta, RepositorioContaSQL>();
 
             var app = builder.Build();
 

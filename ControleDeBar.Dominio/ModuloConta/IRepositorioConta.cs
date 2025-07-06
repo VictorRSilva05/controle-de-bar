@@ -1,11 +1,13 @@
-﻿namespace ControleDeBar.Dominio.ModuloConta;
+﻿using ControleDeBar.Dominio.Compartilhado;
 
-public interface IRepositorioConta
+namespace ControleDeBar.Dominio.ModuloConta;
+
+public interface IRepositorioConta : IRepositorio<Conta>
 {
-    void CadastrarConta(Conta conta);
-    Conta SelecionarPorId(Guid idRegistro);
-    List<Conta> SelecionarContas();
     List<Conta> SelecionarContasAbertas();
     List<Conta> SelecionarContasFechadas();
-    List<Conta> SelecionarContasPorPeriodo(DateTime data);
+    List<Conta> SelecionarContasPeriodo(DateTime data);
+    public void AdicionarPedido(Conta conta, Pedido pedido);
+    public void RemoverPedido(Conta conta, Pedido pedido);
+    public void FecharConta(Conta conta);
 }

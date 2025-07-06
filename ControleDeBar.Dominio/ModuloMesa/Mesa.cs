@@ -18,6 +18,21 @@ public class Mesa : EntidadeBase<Mesa>
         EstaOcupada = false;
     }
 
+    public Mesa(int numero, int capacidade, bool estaOcupada)
+    {
+        Numero = numero;
+        Capacidade = capacidade;
+        EstaOcupada = estaOcupada;
+    }
+
+    public Mesa(Guid guid, int numero, int capacidade, bool estaOcupada)
+    {
+        Id = guid;
+        Numero = numero;
+        Capacidade = capacidade;
+        EstaOcupada = estaOcupada;
+    }
+
     public void Ocupar()
     {
         EstaOcupada = true;

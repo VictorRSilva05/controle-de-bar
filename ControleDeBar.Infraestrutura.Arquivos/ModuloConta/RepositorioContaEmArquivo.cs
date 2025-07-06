@@ -64,6 +64,7 @@ public class RepositorioContaEmArquivo : IRepositorioConta
         return contasFechadas;
     }
 
+    /*
     public List<Conta> SelecionarContasPorPeriodo(DateTime data)
     {
         var contasDoPeriodo = new List<Conta>();
@@ -75,5 +76,50 @@ public class RepositorioContaEmArquivo : IRepositorioConta
         }
 
         return contasDoPeriodo;
+    }
+    */
+    public List<Conta> SelecionarContasPeriodo(DateTime data)
+    {
+        throw new NotImplementedException();
+    }
+
+    public void AdicionarPedido(Conta conta, Pedido pedido)
+    {
+        throw new NotImplementedException();
+    }
+
+    public void RemoverPedido(Conta conta, Pedido pedido)
+    {
+        throw new NotImplementedException();
+    }
+
+    public void FecharConta(Conta conta)
+    {
+        throw new NotImplementedException();
+    }
+
+    public void CadastrarRegistro(Conta novoRegistro)
+    {
+        throw new NotImplementedException();
+    }
+
+    public bool EditarRegistro(Guid idRegistro, Conta registroEditado)
+    {
+        throw new NotImplementedException();
+    }
+
+    public bool ExcluirRegistro(Guid idRegistro)
+    {
+        throw new NotImplementedException();
+    }
+
+    public List<Conta> SelecionarRegistros()
+    {
+        throw new NotImplementedException();
+    }
+
+    public Conta SelecionarRegistroPorId(Guid idRegistro)
+    {
+        throw new NotImplementedException();
     }
 }

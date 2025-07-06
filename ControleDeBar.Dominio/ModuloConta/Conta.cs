@@ -2,24 +2,23 @@
 using ControleDeBar.Dominio.ModuloGarcom;
 using ControleDeBar.Dominio.ModuloMesa;
 using ControleDeBar.Dominio.ModuloProduto;
+using System.Diagnostics.CodeAnalysis;
 
 namespace ControleDeBar.Dominio.ModuloConta;
 
 public class Conta : EntidadeBase<Conta>
 {
-    public string Titular { get; set; }
-    public Mesa Mesa { get; set; }
-    public Garcom Garcom { get; set; }
+    public string Titular { get; set; } = string.Empty;
+    public Mesa Mesa { get; set; } = null!;
+    public Garcom Garcom { get; set; } = null!;
     public DateTime Abertura { get; set; }
-    public DateTime Fechamento { get; set; }
+    public DateTime? Fechamento { get; set; }
     public bool EstaAberta { get; set; }
-    public List<Pedido> Pedidos { get; set; }
+    public decimal ValorTotal { get; set; }
+    public List<Pedido> Pedidos { get; set; } = [];
 
-    public Conta()
-    {
-        Pedidos = new List<Pedido>();
-    }
-
+    [ExcludeFromCodeCoverage]
+    public Conta() { }
     public Conta(string titular, Mesa mesa, Garcom garcom) : this()
     {
         Id = Guid.NewGuid();
@@ -34,21 +33,17 @@ public class Conta : EntidadeBase<Conta>
     {
         EstaAberta = true;
         Abertura = DateTime.Now;
-
-        Mesa.Ocupar();
     }
 
     public void Fechar()
     {
         EstaAberta = false;
         Fechamento = DateTime.Now;
-
-        Mesa.Desocupar();
     }
 
-    public Pedido RegistrarPedido(Produto produto, int quantidadeEscolhida)
+    public Pedido RegistrarPedido(Produto produto, int quantidadeSolicitada)
     {
-        Pedido novoPedido = new Pedido(produto, quantidadeEscolhida);
+        Pedido novoPedido = new(produto, quantidadeSolicitada);
 
         Pedidos.Add(novoPedido);
 
@@ -64,16 +59,10 @@ public class Conta : EntidadeBase<Conta>
 
     public Pedido RemoverPedido(Guid idPedido)
     {
-        Pedido pedidoSelecionado = null;
-
-        foreach (var p in Pedidos)
-        {
-            if (p.Id == idPedido)
-                pedidoSelecionado = p;
-        }
+        Pedido pedidoSelecionado = Pedidos.FirstOrDefault(p => p.Id == idPedido)!;
 
         if (pedidoSelecionado == null)
-            return null;
+            return null!;
 
         Pedidos.Remove(pedidoSelecionado);
 
@@ -84,7 +73,7 @@ public class Conta : EntidadeBase<Conta>
     {
         decimal valorTotal = 0;
 
-        foreach (var p in Pedidos)
+        foreach (Pedido p in Pedidos)
             valorTotal += p.CalcularTotalParcial();
 
         return valorTotal;
