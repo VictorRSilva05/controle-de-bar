@@ -113,6 +113,8 @@ namespace ControleDeBar.Infraestrutura.SqlServer.ModuloGarcom
             if (reader.Read())
                 garcom = ConverterParaGarcom(reader);
 
+            con.Close();
+
             return garcom;
         }
 
