@@ -1,10 +1,11 @@
 using ControleDeBar.Dominio.ModuloConta;
 using ControleDeBar.Dominio.ModuloMesa;
 using ControleDeBar.Dominio.ModuloProduto;
-using ControleDeBar.Infraestrutura.SqlServer.ModuloGarcom;
-using ControleDeBar.Infraestrutura.SqlServer.ModuloProduto;
-using ControleDeBar.Infraestrutura.SQLServer.ModuloConta;
-using ControleDeBar.Infraestrutura.SQLServer.ModuloMesa;
+using ControleDeBar.Infraestrura.Arquivos.Compartilhado;
+using ControleDeBar.Infraestrura.Arquivos.ModuloMesa;
+using ControleDeBar.Infraestrutura.Arquivos.ModuloConta;
+using ControleDeBar.Infraestrutura.Arquivos.ModuloGarcom;
+using ControleDeBar.Infraestrutura.Arquivos.ModuloProduto;
 
 namespace ControleDeBar.WebApp
 {
@@ -14,11 +15,13 @@ namespace ControleDeBar.WebApp
         {
             var builder = WebApplication.CreateBuilder(args);
 
+            builder.Services.AddScoped(_ => new ContextoDados(true));
+            builder.Services.AddScoped<IRepositorioGarcom, RepositorioGarcomEmArquivo>();
+            builder.Services.AddScoped<IRepositorioMesa, RepositorioMesaEmArquivo>();
+            builder.Services.AddScoped<IRepositorioProduto, RepositorioProdutoEmArquivo>();
+            builder.Services.AddScoped<IRepositorioConta, RepositorioContaEmArquivo>();
+
             builder.Services.AddControllersWithViews();
-            builder.Services.AddScoped<IRepositorioGarcom, RepositorioGarcomEmSql>();
-            builder.Services.AddScoped<IRepositorioMesa, RepositorioMesaSQL>();
-            builder.Services.AddScoped<IRepositorioProduto, RepositorioProdutoEmSql>();
-            builder.Services.AddScoped<IRepositorioConta, RepositorioContaSQL>();
 
             var app = builder.Build();
 
