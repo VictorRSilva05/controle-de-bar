@@ -6,6 +6,7 @@ using ControleDeBar.Infraestrura.Arquivos.ModuloMesa;
 using ControleDeBar.Infraestrutura.Arquivos.ModuloConta;
 using ControleDeBar.Infraestrutura.Arquivos.ModuloGarcom;
 using ControleDeBar.Infraestrutura.Arquivos.ModuloProduto;
+using ControleDeBar.WebApp.DependencyInjection;
 
 namespace ControleDeBar.WebApp
 {
@@ -21,6 +22,7 @@ namespace ControleDeBar.WebApp
             builder.Services.AddScoped<IRepositorioProduto, RepositorioProdutoEmArquivo>();
             builder.Services.AddScoped<IRepositorioConta, RepositorioContaEmArquivo>();
 
+            builder.Services.AddEntityFrameworkConfig(builder.Configuration);
             builder.Services.AddControllersWithViews();
 
             var app = builder.Build();
