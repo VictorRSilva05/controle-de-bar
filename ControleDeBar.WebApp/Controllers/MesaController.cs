@@ -1,6 +1,7 @@
 ﻿using ControleDeBar.Dominio.ModuloMesa;
 using ControleDeBar.Infraestrura.Arquivos.Compartilhado;
 using ControleDeBar.Infraestrura.Arquivos.ModuloMesa;
+using ControleDeBar.Infraestrutura.Orm.Compartilhado;
 using ControleDeBar.WebApp.Extensions;
 using ControleDeBar.WebApp.Models;
 using Microsoft.AspNetCore.Mvc;
@@ -11,9 +12,11 @@ namespace ControleDeBar.WebApp.Controllers;
 public class MesaController : Controller
 {
     private readonly IRepositorioMesa repositorioMesa;
+    private readonly ControleDeBarDbContext contexto;
 
-    public MesaController(IRepositorioMesa repositorioMesa)
+    public MesaController(ControleDeBarDbContext contexto, IRepositorioMesa repositorioMesa)
     {
+        this.contexto = contexto;
         this.repositorioMesa = repositorioMesa;
     }
 
@@ -55,7 +58,22 @@ public class MesaController : Controller
 
         var entidade = cadastrarVM.ParaEntidade();
 
-        repositorioMesa.CadastrarRegistro(entidade);
+        var transacao = contexto.Database.BeginTransaction();
+
+        try
+        {
+            repositorioMesa.CadastrarRegistro(entidade);
+
+            contexto.SaveChanges();
+            transacao.Commit();
+
+        }
+        catch (Exception)
+        {
+            transacao.Rollback();
+
+            throw;
+        }
 
         return RedirectToAction(nameof(Index));
     }
@@ -94,7 +112,21 @@ public class MesaController : Controller
 
         var entidadeEditada = editarVM.ParaEntidade();
 
-        repositorioMesa.EditarRegistro(id, entidadeEditada);
+        var transacao = contexto.Database.BeginTransaction();
+
+        try
+        {
+            repositorioMesa.EditarRegistro(id, entidadeEditada);
+
+            contexto.SaveChanges();
+            transacao.Commit();
+        }
+        catch (Exception)
+        {
+            transacao.Rollback();
+
+            throw;
+        }
 
         return RedirectToAction(nameof(Index));
     }
@@ -112,8 +144,23 @@ public class MesaController : Controller
     [HttpPost("excluir/{id:guid}")]
     public ActionResult ExcluirConfirmado(Guid id)
     {
-        repositorioMesa.ExcluirRegistro(id);
+        var transacao = contexto.Database.BeginTransaction();
 
+        try
+        {
+            repositorioMesa.ExcluirRegistro(id);
+
+            contexto.SaveChanges();
+
+            transacao.Commit();
+        }
+        catch (Exception)
+        {
+            transacao.Rollback();
+            
+            throw;
+        }
+      
         return RedirectToAction(nameof(Index));
     }
 
