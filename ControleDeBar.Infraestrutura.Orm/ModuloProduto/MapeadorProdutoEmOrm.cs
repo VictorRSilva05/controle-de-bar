@@ -10,9 +10,11 @@ public class MapeadorProdutoEmOrm : IEntityTypeConfiguration<Produto>
         builder.Property(x => x.Id)
             .ValueGeneratedNever()
             .IsRequired();
+
         builder.Property(x => x.Nome)
             .HasMaxLength(100)
             .IsRequired();
+
         builder.Property(x => x.Valor)
             .IsRequired();
     }

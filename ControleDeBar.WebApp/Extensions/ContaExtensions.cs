@@ -11,37 +11,33 @@ public static class ContaExtensions
     {
         Mesa? mesaSelecionada = null;
 
-        foreach (Mesa m in mesas)
+        foreach (var mesa in mesas)
         {
-            if (m.Id == abrirVM.MesaId)
-                mesaSelecionada = m;
+            if (mesa.Id == abrirVM.MesaId)
+                mesaSelecionada = mesa;
         }
 
         Garcom? garcomSelecionado = null;
 
-        foreach (Garcom g in garcons)
+        foreach (var garcom in garcons)
         {
-            if (g.Id == abrirVM.GarcomId)
-                garcomSelecionado = g;
+            if (garcom.Id == abrirVM.GarcomId)
+                garcomSelecionado = garcom;
         }
 
-        return new(
-            abrirVM.Titular,
-            mesaSelecionada!,
-            garcomSelecionado!);
+        return new Conta(abrirVM.Titular, mesaSelecionada, garcomSelecionado);
     }
 
     public static DetalhesContaViewModel ParaDetalhesVM(this Conta conta)
     {
-        return new(
+        return new DetalhesContaViewModel(
                 conta.Id,
                 conta.Titular,
                 conta.Mesa.Numero,
                 conta.Garcom.Nome,
-                conta.Abertura,
-                conta.Fechamento,
                 conta.EstaAberta,
                 conta.CalcularValorTotal(),
-                conta.Pedidos);
+                conta.Pedidos
+        );
     }
 }

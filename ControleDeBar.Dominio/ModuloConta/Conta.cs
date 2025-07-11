@@ -43,7 +43,7 @@ public class Conta : EntidadeBase<Conta>
 
     public Pedido RegistrarPedido(Produto produto, int quantidadeSolicitada)
     {
-        Pedido novoPedido = new(produto, quantidadeSolicitada);
+        Pedido novoPedido = new(produto, quantidadeSolicitada, this);
 
         Pedidos.Add(novoPedido);
 

@@ -2,6 +2,8 @@
 using ControleDeBar.Dominio.ModuloGarcom;
 using ControleDeBar.Dominio.ModuloMesa;
 using ControleDeBar.Dominio.ModuloProduto;
+using ControleDeBar.Infraestrura.Arquivos.Compartilhado;
+using ControleDeBar.Infraestrutura.Orm.Compartilhado;
 using ControleDeBar.WebApp.Extensions;
 using ControleDeBar.WebApp.Models;
 using Microsoft.AspNetCore.Mvc;
@@ -11,14 +13,21 @@ namespace ControleDeBar.WebApp.Controllers;
 [Route("contas")]
 public class ContaController : Controller
 {
+    private readonly ControleDeBarDbContext contexto;
     private readonly IRepositorioConta repositorioConta;
     private readonly IRepositorioMesa repositorioMesa;
     private readonly IRepositorioGarcom repositorioGarcom;
     private readonly IRepositorioProduto repositorioProduto;
 
-    public ContaController(IRepositorioConta repositorioConta, IRepositorioMesa repositorioMesa,
-        IRepositorioGarcom repositorioGarcom, IRepositorioProduto repositorioProduto)
+    public ContaController(
+        ControleDeBarDbContext contexto,
+        IRepositorioConta repositorioConta,
+        IRepositorioMesa repositorioMesa,
+        IRepositorioGarcom repositorioGarcom,
+        IRepositorioProduto repositorioProduto
+    )
     {
+        this.contexto = contexto;
         this.repositorioConta = repositorioConta;
         this.repositorioMesa = repositorioMesa;
         this.repositorioGarcom = repositorioGarcom;
@@ -26,21 +35,18 @@ public class ContaController : Controller
     }
 
     [HttpGet]
-    public IActionResult Index(string status, Guid? garcomId)
+    public IActionResult Index(string status)
     {
-        List<Conta> contas = status switch
+        List<Conta> registros;
+
+        switch (status)
         {
-            "abertas" => repositorioConta.SelecionarContasAbertas(),
-            "fechadas" => repositorioConta.SelecionarContasFechadas(),
-            _ => repositorioConta.SelecionarRegistros(),
-        };
+            case "abertas": registros = repositorioConta.SelecionarContasAbertas(); break;
+            case "fechadas": registros = repositorioConta.SelecionarContasFechadas(); break;
+            default: registros = repositorioConta.SelecionarContas(); break;
+        }
 
-        if (garcomId.HasValue)
-            contas = [.. contas.Where(c => c.Garcom.Id == garcomId.Value)];
-
-        List<Garcom> garcons = repositorioGarcom.SelecionarRegistros();
-
-        VisualizarContasViewModel visualizarVM = new(contas, garcons, status, garcomId);
+        var visualizarVM = new VisualizarContasViewModel(registros);
 
         return View(visualizarVM);
     }
@@ -48,10 +54,10 @@ public class ContaController : Controller
     [HttpGet("abrir")]
     public IActionResult Abrir()
     {
-        List<Mesa> mesas = repositorioMesa.SelecionarRegistros();
-        List<Garcom> garcons = repositorioGarcom.SelecionarRegistros();
+        var mesas = repositorioMesa.SelecionarRegistros();
+        var garcons = repositorioGarcom.SelecionarRegistros();
 
-        AbrirContaViewModel abrirVM = new(mesas, garcons);
+        var abrirVM = new AbrirContaViewModel(mesas, garcons);
 
         return View(abrirVM);
     }
@@ -60,32 +66,28 @@ public class ContaController : Controller
     [ValidateAntiForgeryToken]
     public IActionResult Abrir(AbrirContaViewModel abrirVM)
     {
-        List<Mesa> mesas = repositorioMesa.SelecionarRegistros();
-        List<Garcom> garcons = repositorioGarcom.SelecionarRegistros();
+        var registros = repositorioConta.SelecionarContas();
 
-        Conta novaConta = abrirVM.ParaEntidade(mesas, garcons);
-
-        foreach (Conta c in repositorioConta.SelecionarRegistros())
+        foreach (var conta in registros)
         {
-            if (c.Titular.Equals(abrirVM.Titular) && c.EstaAberta)
+            if (conta.Titular.Equals(abrirVM.Titular) && conta.EstaAberta)
             {
-                ModelState.AddModelError("ConflitoAbrirConta", "Já existe uma conta aberta para este titular.");
+                ModelState.AddModelError("CadastroUnico", "Já existe uma conta aberta para este titular.");
                 break;
             }
         }
 
-        if (repositorioMesa.VerificarMesaCheia(novaConta.Mesa, repositorioConta.SelecionarContasAbertas()))
-            ModelState.AddModelError("ConflitoAbrirConta", "Esta mesa está cheia!");
-
         if (!ModelState.IsValid)
-        {
-            return View("Abrir", new AbrirContaViewModel(
-            mesas,
-            garcons));
-        }
+            return View(abrirVM);
 
-        repositorioConta.CadastrarRegistro(novaConta);
-        repositorioMesa.OcuparMesa(novaConta.Mesa);
+        var mesas = repositorioMesa.SelecionarRegistros();
+        var garcons = repositorioGarcom.SelecionarRegistros();
+
+        var entidade = abrirVM.ParaEntidade(mesas, garcons);
+
+        repositorioConta.CadastrarConta(entidade);
+
+        contexto.SaveChanges();
 
         return RedirectToAction(nameof(Index));
     }
@@ -93,15 +95,15 @@ public class ContaController : Controller
     [HttpGet, Route("/contas/{id:guid}/fechar")]
     public IActionResult Fechar(Guid id)
     {
-        Conta contaSelecionada = repositorioConta.SelecionarRegistroPorId(id)!;
+        var registro = repositorioConta.SelecionarPorId(id);
 
-        FecharContaViewModel fecharContaVM = new(
-            contaSelecionada.Id,
-            contaSelecionada.Titular,
-            contaSelecionada.Mesa.Numero,
-            contaSelecionada.Garcom.Nome,
-            contaSelecionada.CalcularValorTotal(),
-            contaSelecionada.Pedidos);
+        var fecharContaVM = new FecharContaViewModel(
+            registro.Id,
+            registro.Titular,
+            registro.Mesa.Numero,
+            registro.Garcom.Nome,
+            registro.CalcularValorTotal()
+        );
 
         return View(fecharContaVM);
     }
@@ -109,10 +111,11 @@ public class ContaController : Controller
     [HttpPost, Route("/contas/{id:guid}/fechar")]
     public IActionResult FecharConfirmado(Guid id)
     {
-        Conta contaSelecionada = repositorioConta.SelecionarRegistroPorId(id)!;
+        var registroSelecionado = repositorioConta.SelecionarPorId(id);
 
-        repositorioConta.FecharConta(contaSelecionada);
-        repositorioMesa.DesocuparMesa(contaSelecionada.Mesa);
+        registroSelecionado.Fechar();
+
+        contexto.SaveChanges();
 
         return RedirectToAction(nameof(Index));
     }
@@ -120,12 +123,10 @@ public class ContaController : Controller
     [HttpGet, Route("/contas/{id:guid}/gerenciar-pedidos")]
     public IActionResult GerenciarPedidos(Guid id)
     {
-        Conta contaSelecionada = repositorioConta.SelecionarRegistroPorId(id)!;
-        List<Produto> produtos = repositorioProduto.SelecionarRegistros();
+        var contaSelecionada = repositorioConta.SelecionarPorId(id);
+        var produtos = repositorioProduto.SelecionarRegistros();
 
-        GerenciarPedidosViewModel gerenciarPedidosVm = new(
-            contaSelecionada,
-            produtos);
+        var gerenciarPedidosVm = new GerenciarPedidosViewModel(contaSelecionada, produtos);
 
         return View(gerenciarPedidosVm);
     }
@@ -133,43 +134,39 @@ public class ContaController : Controller
     [HttpPost, Route("/contas/{id:guid}/adicionar-pedido")]
     public IActionResult AdicionarPedido(Guid id, AdicionarPedidoViewModel adicionarPedidoVm)
     {
-        Conta contaSelecionada = repositorioConta.SelecionarRegistroPorId(id)!;
-        Produto produtoSelecionado = repositorioProduto.SelecionarRegistroPorId(adicionarPedidoVm.IdProduto)!;
+        var contaSelecionada = repositorioConta.SelecionarPorId(id);
+        var produtoSelecionado = repositorioProduto.SelecionarRegistroPorId(adicionarPedidoVm.IdProduto);
 
-        Pedido novoPedido = new()
-        {
-            Id = Guid.NewGuid(),
-            Produto = produtoSelecionado,
-            Quantidade = adicionarPedidoVm.Quantidade
-        };
+        var pedido = contaSelecionada.RegistrarPedido(
+            produtoSelecionado,
+            adicionarPedidoVm.QuantidadeSolicitada
+        );
 
-        repositorioConta.AdicionarPedido(contaSelecionada, novoPedido);
-        contaSelecionada.RegistrarPedido(produtoSelecionado, novoPedido.Quantidade);
+        contexto.Pedidos.Add(pedido);
 
-        List<Produto> produtos = repositorioProduto.SelecionarRegistros();
+        contexto.SaveChanges();
 
-        GerenciarPedidosViewModel gerenciarPedidosVm = new(
-            contaSelecionada,
-            produtos);
+        var produtos = repositorioProduto.SelecionarRegistros();
 
-        return RedirectToAction(nameof(GerenciarPedidos), new { id });
+        var gerenciarPedidosVm = new GerenciarPedidosViewModel(contaSelecionada, produtos);
+
+        return View("GerenciarPedidos", gerenciarPedidosVm);
     }
 
     [HttpPost, Route("/contas/{id:guid}/remover-pedido/{idPedido:guid}")]
     public IActionResult RemoverPedido(Guid id, Guid idPedido)
     {
-        Conta contaSelecionada = repositorioConta.SelecionarRegistroPorId(id)!;
-        Pedido pedidoRemovido = contaSelecionada.RemoverPedido(idPedido);
+        var contaSelecionada = repositorioConta.SelecionarPorId(id);
 
-        repositorioConta.RemoverPedido(contaSelecionada, pedidoRemovido);
+        var pedidoRemovido = contaSelecionada.RemoverPedido(idPedido);
 
-        List<Produto> produtos = repositorioProduto.SelecionarRegistros();
+        contexto.SaveChanges();
 
-        GerenciarPedidosViewModel gerenciarPedidosVm = new(
-            contaSelecionada,
-            produtos);
+        var produtos = repositorioProduto.SelecionarRegistros();
 
-        return RedirectToAction(nameof(GerenciarPedidos), new { id });
+        var gerenciarPedidosVm = new GerenciarPedidosViewModel(contaSelecionada, produtos);
+
+        return View("GerenciarPedidos", gerenciarPedidosVm);
     }
 
     [HttpGet("faturamento")]
@@ -178,9 +175,9 @@ public class ContaController : Controller
         if (!data.HasValue)
             return View();
 
-        List<Conta> contas = repositorioConta.SelecionarContasPeriodo(data.GetValueOrDefault());
+        var registros = repositorioConta.SelecionarContasPorPeriodo(data.GetValueOrDefault());
 
-        FaturamentoViewModel faturamentoVM = new(contas);
+        var faturamentoVM = new FaturamentoViewModel(registros);
 
         return View(faturamentoVM);
     }

@@ -2,7 +2,7 @@ using ControleDeBar.Dominio.ModuloConta;
 using ControleDeBar.Dominio.ModuloMesa;
 using ControleDeBar.Dominio.ModuloProduto;
 using ControleDeBar.Infraestrura.Arquivos.Compartilhado;
-using ControleDeBar.Infraestrutura.Arquivos.ModuloConta;
+using ControleDeBar.Infraestrutura.Orm.ModuloConta;
 using ControleDeBar.Infraestrutura.Orm.ModuloGarcom;
 using ControleDeBar.Infraestrutura.Orm.ModuloMesa;
 using ControleDeBar.Infraestrutura.Orm.ModuloProduto;
@@ -20,7 +20,7 @@ namespace ControleDeBar.WebApp
             builder.Services.AddScoped<IRepositorioGarcom, RepositorioGarcomEmOrm>();
             builder.Services.AddScoped<IRepositorioMesa, RepositorioMesaEmOrm>();
             builder.Services.AddScoped<IRepositorioProduto, RepositorioProdutoEmOrm>();
-            builder.Services.AddScoped<IRepositorioConta, RepositorioContaEmArquivo>();
+            builder.Services.AddScoped<IRepositorioConta, RepositorioContaEmOrm>();
 
             builder.Services.AddEntityFrameworkConfig(builder.Configuration);
             builder.Services.AddControllersWithViews();

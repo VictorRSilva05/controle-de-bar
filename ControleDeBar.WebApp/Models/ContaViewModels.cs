@@ -1,46 +1,48 @@
-﻿using ControleDeBar.Dominio.ModuloConta;
-using ControleDeBar.Dominio.ModuloGarcom;
+﻿using ControleDeBar.Dominio.ModuloGarcom;
 using ControleDeBar.Dominio.ModuloMesa;
-using ControleDeBar.Dominio.ModuloProduto;
-using ControleDeBar.WebApp.Extensions;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using System.ComponentModel.DataAnnotations;
+using ControleDeBar.Dominio.ModuloConta;
+using ControleDeBar.WebApp.Extensions;
+using ControleDeBar.Dominio.ModuloProduto;
 
 namespace ControleDeBar.WebApp.Models;
 
 public class AbrirContaViewModel
 {
-    [Required(ErrorMessage = "Titular é obrigatório")]
-    [StringLength(100, MinimumLength = 3, ErrorMessage = "O nome do item deve ter entre 3 e 100 caracteres")]
-    public string Titular { get; set; } = string.Empty;
+    [Required(ErrorMessage = "O campo \"Titular\" é obrigatório.")]
+    [MinLength(3, ErrorMessage = "O campo \"Titular\" precisa conter ao menos 3 caracteres.")]
+    [MaxLength(100, ErrorMessage = "O campo \"Titular\" precisa conter no máximo 100 caracteres.")]
+    public string Titular { get; set; }
 
-    [Required(ErrorMessage = "Mesa é obrigatório")]
+    [Required(ErrorMessage = "O campo \"Mesa\" é obrigatório.")]
     public Guid MesaId { get; set; }
-    public List<SelectListItem> MesasDisponiveis { get; set; } = [];
+    public List<SelectListItem> MesasDisponiveis { get; set; }
 
-    [Required(ErrorMessage = "Garçom é obrigatório")]
+    [Required(ErrorMessage = "O campo \"Garçom\" é obrigatório.")]
     public Guid GarcomId { get; set; }
-    public List<SelectListItem> GarconsDisponiveis { get; set; } = [];
+    public List<SelectListItem> GarconsDisponiveis { get; set; }
 
-    public AbrirContaViewModel() { }
-    public AbrirContaViewModel(List<Mesa> mesas, List<Garcom> garcons)
+    public AbrirContaViewModel()
     {
-        foreach (Mesa m in mesas)
+        MesasDisponiveis = new List<SelectListItem>();
+        GarconsDisponiveis = new List<SelectListItem>();
+    }
+
+    public AbrirContaViewModel(List<Mesa> mesas, List<Garcom> garcons) : this()
+    {
+        foreach (var m in mesas)
         {
-            MesasDisponiveis.Add(new SelectListItem
-            {
-                Text = m.Numero.ToString(),
-                Value = m.Id.ToString(),
-            });
+            var mesaDisponivel = new SelectListItem(m.Numero.ToString(), m.Id.ToString());
+
+            MesasDisponiveis.Add(mesaDisponivel);
         }
 
-        foreach (Garcom g in garcons)
+        foreach (var g in garcons)
         {
-            GarconsDisponiveis.Add(new SelectListItem
-            {
-                Text = g.Nome,
-                Value = g.Id.ToString(),
-            });
+            var nomeDisponivel = new SelectListItem(g.Nome.ToString(), g.Id.ToString());
+
+            GarconsDisponiveis.Add(nomeDisponivel);
         }
     }
 }
@@ -48,48 +50,31 @@ public class AbrirContaViewModel
 public class FecharContaViewModel
 {
     public Guid Id { get; set; }
-    public string Titular { get; set; } = string.Empty;
+    public string Titular { get; set; }
     public int Mesa { get; set; }
-    public string Garcom { get; set; } = string.Empty;
+    public string Garcom { get; set; }
     public decimal ValorTotal { get; set; }
-    public List<Pedido> Pedidos { get; set; } = [];
 
-    public FecharContaViewModel() { }
-    public FecharContaViewModel(Guid id, string titular, int mesa, string garcom, decimal valorTotal, List<Pedido> pedidos)
+    public FecharContaViewModel(Guid id, string titular, int mesa, string garcom, decimal valorTotal)
     {
         Id = id;
         Titular = titular;
         Mesa = mesa;
         Garcom = garcom;
         ValorTotal = valorTotal;
-        Pedidos.AddRange(pedidos);
     }
 }
 
 public class VisualizarContasViewModel
 {
-    public List<DetalhesContaViewModel> Registros { get; set; } = [];
-    public List<SelectListItem> GarconsDisponiveis { get; set; } = [];
-    public Guid? GarcomId { get; set; }
-    public string Status { get; set; } = string.Empty;
+    public List<DetalhesContaViewModel> Registros { get; set; }
 
-    public VisualizarContasViewModel(List<Conta> contas, List<Garcom> garcons, string status, Guid? garcomId)
+    public VisualizarContasViewModel(List<Conta> contas)
     {
-        foreach (Conta c in contas)
-            Registros.Add(c.ParaDetalhesVM());
+        Registros = new List<DetalhesContaViewModel>();
 
-        foreach (Garcom g in garcons)
-        {
-            GarconsDisponiveis.Add(new SelectListItem
-            {
-                Text = g.Nome,
-                Value = g.Id.ToString(),
-                Selected = garcomId.HasValue && g.Id == garcomId.Value
-            });
-        }
-
-        GarcomId = garcomId;
-        Status = status;
+        foreach (var g in contas)
+            Registros.Add(g.ParaDetalhesVM());
     }
 }
 
@@ -99,30 +84,37 @@ public class DetalhesContaViewModel
     public string Titular { get; set; }
     public int Mesa { get; set; }
     public string Garcom { get; set; }
-    public DateTime Abertura { get; set; }
-    public DateTime? Fechamento { get; set; }
     public bool EstaAberta { get; set; }
     public decimal ValorTotal { get; set; }
-    public List<PedidoContaViewModel> Pedidos { get; set; } = [];
+    public List<PedidoContaViewModel> Pedidos { get; set; }
 
-    public DetalhesContaViewModel(Guid id, string titular, int mesa, string garcom, DateTime abertura, DateTime? fechamento, bool estaAberta, decimal valorTotal, List<Pedido> pedidos)
+    public DetalhesContaViewModel(
+        Guid id,
+        string titular,
+        int mesa,
+        string garcom,
+        bool estaAberta,
+        decimal valorTotal,
+        List<Pedido> pedidos
+    )
     {
         Id = id;
         Titular = titular;
         Mesa = mesa;
         Garcom = garcom;
-        Abertura = abertura;
-        Fechamento = fechamento;
         EstaAberta = estaAberta;
         ValorTotal = valorTotal;
 
-        foreach (Pedido p in pedidos)
+        Pedidos = new List<PedidoContaViewModel>();
+
+        foreach (var item in pedidos)
         {
-            PedidoContaViewModel pedidoVM = new(
-                p.Id,
-                p.Produto.Nome,
-                p.Quantidade,
-                p.CalcularTotalParcial());
+            var pedidoVM = new PedidoContaViewModel(
+                item.Id,
+                item.Produto.Nome,
+                item.Quantidade,
+                item.CalcularTotalParcial()
+            );
 
             Pedidos.Add(pedidoVM);
         }
@@ -132,11 +124,10 @@ public class DetalhesContaViewModel
 public class PedidoContaViewModel
 {
     public Guid Id { get; set; }
-    public string Produto { get; set; } = string.Empty;
+    public string Produto { get; set; }
     public int QuantidadeSolicitada { get; set; }
     public decimal TotalParcial { get; set; }
 
-    public PedidoContaViewModel() { }
     public PedidoContaViewModel(Guid id, string produto, int quantidadeSolicitada, decimal totalParcial)
     {
         Id = id;
@@ -148,19 +139,20 @@ public class PedidoContaViewModel
 
 public class GerenciarPedidosViewModel
 {
-    public DetalhesContaViewModel Conta { get; set; } = null!;
-    public List<SelectListItem> Produtos { get; set; } = [];
+    public DetalhesContaViewModel Conta { get; set; }
+    public List<SelectListItem> Produtos { get; set; }
 
     public GerenciarPedidosViewModel() { }
+
     public GerenciarPedidosViewModel(Conta conta, List<Produto> produtos) : this()
     {
         Conta = conta.ParaDetalhesVM();
 
-        foreach (Produto p in produtos)
+        Produtos = new List<SelectListItem>();
+
+        foreach (var p in produtos)
         {
-            SelectListItem selectItem = new(
-                p.Nome,
-                p.Id.ToString());
+            var selectItem = new SelectListItem(p.Nome, p.Id.ToString());
 
             Produtos.Add(selectItem);
         }
@@ -170,17 +162,19 @@ public class GerenciarPedidosViewModel
 public class AdicionarPedidoViewModel
 {
     public Guid IdProduto { get; set; }
-    public int Quantidade { get; set; }
+    public int QuantidadeSolicitada { get; set; }
 }
 
 public class FaturamentoViewModel
 {
-    public List<DetalhesContaViewModel> Registros { get; set; } = [];
+    public List<DetalhesContaViewModel> Registros { get; set; }
     public decimal Total { get; set; }
 
     public FaturamentoViewModel(List<Conta> contas)
     {
-        foreach (Conta c in contas)
+        Registros = new List<DetalhesContaViewModel>();
+
+        foreach (var c in contas)
         {
             Total += c.CalcularValorTotal();
 
