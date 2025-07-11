@@ -3,9 +3,9 @@ using ControleDeBar.Dominio.ModuloMesa;
 using ControleDeBar.Dominio.ModuloProduto;
 using ControleDeBar.Infraestrura.Arquivos.Compartilhado;
 using ControleDeBar.Infraestrutura.Arquivos.ModuloConta;
-using ControleDeBar.Infraestrutura.Arquivos.ModuloProduto;
 using ControleDeBar.Infraestrutura.Orm.ModuloGarcom;
 using ControleDeBar.Infraestrutura.Orm.ModuloMesa;
+using ControleDeBar.Infraestrutura.Orm.ModuloProduto;
 using ControleDeBar.WebApp.DependencyInjection;
 
 namespace ControleDeBar.WebApp
@@ -19,7 +19,7 @@ namespace ControleDeBar.WebApp
             builder.Services.AddScoped(_ => new ContextoDados(true));
             builder.Services.AddScoped<IRepositorioGarcom, RepositorioGarcomEmOrm>();
             builder.Services.AddScoped<IRepositorioMesa, RepositorioMesaEmOrm>();
-            builder.Services.AddScoped<IRepositorioProduto, RepositorioProdutoEmArquivo>();
+            builder.Services.AddScoped<IRepositorioProduto, RepositorioProdutoEmOrm>();
             builder.Services.AddScoped<IRepositorioConta, RepositorioContaEmArquivo>();
 
             builder.Services.AddEntityFrameworkConfig(builder.Configuration);

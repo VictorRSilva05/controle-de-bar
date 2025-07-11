@@ -1,4 +1,6 @@
 ﻿using ControleDeBar.Dominio.ModuloProduto;
+using ControleDeBar.Infraestrura.Arquivos.ModuloMesa;
+using ControleDeBar.Infraestrutura.Orm.Compartilhado;
 using ControleDeBar.WebApp.Extensions;
 using ControleDeBar.WebApp.Models;
 using Microsoft.AspNetCore.Mvc;
@@ -8,10 +10,12 @@ namespace ControleDeBar.WebApp.Controllers;
 [Route("produtos")]
 public class ProdutoController : Controller
 {
+    private readonly ControleDeBarDbContext contexo;
     private readonly IRepositorioProduto repositorioProduto;
 
-    public ProdutoController(IRepositorioProduto repositorioProduto)
+    public ProdutoController(ControleDeBarDbContext contexo, IRepositorioProduto repositorioProduto)
     {
+        this.contexo = contexo;
         this.repositorioProduto = repositorioProduto;
     }
 
@@ -53,7 +57,20 @@ public class ProdutoController : Controller
 
         var entidade = cadastrarVM.ParaEntidade();
 
-        repositorioProduto.CadastrarRegistro(entidade);
+        var transacao = contexo.Database.BeginTransaction();
+
+        try
+        {
+            repositorioProduto.CadastrarRegistro(entidade);
+
+            contexo.SaveChanges();
+            transacao.Commit();
+        }
+        catch (Exception)
+        {
+            transacao.Rollback();
+            throw;
+        }
 
         return RedirectToAction(nameof(Index));
     }
@@ -92,7 +109,20 @@ public class ProdutoController : Controller
 
         var entidadeEditada = editarVM.ParaEntidade();
 
-        repositorioProduto.EditarRegistro(id, entidadeEditada);
+        var transacao = contexo.Database.BeginTransaction();
+
+        try
+        {
+            repositorioProduto.EditarRegistro(id, entidadeEditada);
+
+            contexo.SaveChanges();
+            transacao.Commit();
+        }
+        catch (Exception)
+        {
+            transacao.Rollback();
+            throw;
+        }
 
         return RedirectToAction(nameof(Index));
     }
@@ -110,7 +140,20 @@ public class ProdutoController : Controller
     [HttpPost("excluir/{id:guid}")]
     public IActionResult ExcluirConfirmado(Guid id)
     {
-        repositorioProduto.ExcluirRegistro(id);
+        var transacao = contexo.Database.BeginTransaction();
+
+        try
+        {
+            repositorioProduto.ExcluirRegistro(id);
+
+            contexo.SaveChanges();
+            transacao.Commit();
+        }
+        catch (Exception)
+        {
+            transacao.Rollback();
+            throw;
+        }
 
         return RedirectToAction(nameof(Index));
     }
