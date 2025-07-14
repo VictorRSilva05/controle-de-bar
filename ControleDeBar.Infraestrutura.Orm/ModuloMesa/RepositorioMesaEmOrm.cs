@@ -1,7 +1,6 @@
 ﻿using ControleDeBar.Dominio.ModuloConta;
 using ControleDeBar.Dominio.ModuloMesa;
 using ControleDeBar.Infraestrutura.Orm.Compartilhado;
-using Microsoft.Identity.Client;
 
 namespace ControleDeBar.Infraestrutura.Orm.ModuloMesa;
 
