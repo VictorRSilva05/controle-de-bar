@@ -2,11 +2,14 @@ using ControleDeBar.Dominio.ModuloConta;
 using ControleDeBar.Dominio.ModuloMesa;
 using ControleDeBar.Dominio.ModuloProduto;
 using ControleDeBar.Infraestrura.Arquivos.Compartilhado;
+using ControleDeBar.Infraestrutura.Orm.Compartilhado;
 using ControleDeBar.Infraestrutura.Orm.ModuloConta;
 using ControleDeBar.Infraestrutura.Orm.ModuloGarcom;
 using ControleDeBar.Infraestrutura.Orm.ModuloMesa;
 using ControleDeBar.Infraestrutura.Orm.ModuloProduto;
 using ControleDeBar.WebApp.DependencyInjection;
+using ControleDeBar.WebApp.Orm;
+using Microsoft.EntityFrameworkCore;
 
 namespace ControleDeBar.WebApp
 {
@@ -27,6 +30,7 @@ namespace ControleDeBar.WebApp
 
             var app = builder.Build();
 
+            app.ApplyMigrations();
             app.UseStaticFiles();
             app.UseRouting();
             app.MapDefaultControllerRoute();
